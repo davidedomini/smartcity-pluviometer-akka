@@ -1,56 +1,71 @@
 package sensors
 
 import msg.Message
-import akka.actor.typed.receptionist.Receptionist
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+
 import concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-import akka.actor.typed.receptionist.ServiceKey
-//Il sensore parte e si registra
 
 object Sensor:
   sealed trait Command extends Message
   case object Start extends Command
   case object Greet extends Command
   case object GenerateData extends Command
+  case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
 
-  val Service = ServiceKey[Command]("Sensor")
+  
+  def apply(i: Int): Behavior[Command | Receptionist.Listing] =
 
-  def apply(i: Int): Behavior[Command] =
-
-    Behaviors.setup { ctx =>
-      ctx.system.receptionist ! Receptionist.Register(Service, ctx.self)
+    var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
+    
+    Behaviors.setup[Command | Receptionist.Listing] { ctx =>
+      
+      ctx.system.receptionist ! Receptionist.Subscribe(ZoneLeader.Service, ctx.self)
+      
       Behaviors.withTimers {
         timers =>
-          timers.startTimerAtFixedRate(GenerateData, 1000 milliseconds) // ogni secondo si manda un messaggio di generate
-          SensorLogic()
+          // ogni secondo si manda un messaggio di generate
+          timers.startTimerAtFixedRate(GenerateData, 1000 milliseconds)
+          SensorLogic(i, ctx.self, Option.empty)
       }
-//      Behaviors.receiveMessage {
-//        case Start =>
-//          println("Sensore partito " + i)
-//          Behaviors.same
-//
-//        case Greet =>
-//          println("Ciao sono il sensore " + i)
-//          Behaviors.same
-//      }
+
     }
 
-  def SensorLogic(): Behavior[Command] =
+  def SensorLogic(
+         myZone: Int,
+         myself: ActorRef[Command],
+         myLeader: Option[ActorRef[ZoneLeader.Command]]
+  ): Behavior[Command | Receptionist.Listing] =
     Behaviors.receiveMessage {
       case Start =>
         println("Sensore partito ")
-        SensorLogic()
+        SensorLogic(myZone, myself, myLeader)
 
       case Greet =>
         println("Ciao sono il sensore ")
-        SensorLogic()
+        SensorLogic(myZone, myself, myLeader)
 
       case GenerateData =>
         println("Sto generandooooooo")
-        SensorLogic()
-
+        SensorLogic(myZone, myself, myLeader)
+        
+      case msg: Receptionist.Listing =>
+        if(myLeader.isEmpty) then
+          val leaders = msg.serviceInstances(ZoneLeader.Service).toList
+          for
+            l <- leaders
+          yield l ! ZoneLeader.TellMeYourZone(myself)
+        SensorLogic(myZone, myself, myLeader)
+        
+      case ZoneOfTheLeader(z, l) =>
+        println("HO RICEVUTO RISPOSTA DA LEADER: " + l)
+        if z == myZone then
+          println("SENSORE " + myself + " => Il mio leader è: " + l)
+          SensorLogic(myZone, myself, Option(l))
+        else
+          SensorLogic(myZone, myself, myLeader)
     }

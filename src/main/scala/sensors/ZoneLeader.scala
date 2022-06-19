@@ -13,21 +13,17 @@ object ZoneLeader:
   case object Start extends Command
   case object PingSensor extends Command
   case object NewData extends Command
+  case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
 
-  //val Service = ServiceKey[Command]("Leader")
+  val Service = ServiceKey[Command]("Leader")
 
-  def apply(): Behavior[Command | Receptionist.Listing] =
+  def apply(zone: Int): Behavior[Command] =
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
-    Behaviors.setup[Command | Receptionist.Listing]{
+    Behaviors.setup[Command]{
       ctx =>
+        ctx.system.receptionist ! Receptionist.Register(Service, ctx.self)
 
-        ctx.system.receptionist ! Receptionist.Subscribe(Sensor.Service, ctx.self)
         Behaviors.receiveMessage {
-          case msg: Receptionist.Listing =>
-            println("ZONE LEADER => Nuovo sensore registrato ")
-            sensors = msg.serviceInstances(Sensor.Service).toList
-            println("ZONE LEADER => sensors: " + sensors)
-            Behaviors.same
           case Start =>
             println("Leader partito")
             Behaviors.same
@@ -39,6 +35,10 @@ object ZoneLeader:
             Behaviors.same
           case NewData =>
             println("LEADER => Il sensore mi ha inviato un nuovo dato ")
+            Behaviors.same
+          case TellMeYourZone(replyTo) =>
+            println("MANDO RISPOSTA AL SENSORE")
+            replyTo ! Sensor.ZoneOfTheLeader(zone, ctx.self)
             Behaviors.same
         }
     }

@@ -9,16 +9,16 @@ import com.typesafe.config.ConfigFactory
 import sensors.{Sensor, ZoneLeader}
 
 object Root:
-  def apply(): Behavior[Nothing] =
+  def apply(i: Int): Behavior[Nothing] =
     Behaviors.setup {
       ctx =>
         val cluster = Cluster(ctx.system)
         if cluster.selfMember.hasRole("Sensor") then
-          val s = ctx.spawn(Sensor(1), "Sensor")
-          s ! Sensor.Start
+          val s = ctx.spawn(Sensor(i), "Sensor")
+          //s ! Sensor.Start
         else
-          val l = ctx.spawn(ZoneLeader(), "Leader")
-          l ! ZoneLeader.Start
+          val l = ctx.spawn(ZoneLeader(i), "Leader")
+          //l ! ZoneLeader.Start
           //l ! ZoneLeader.PingSensor
           //l ! ZoneLeader.PingSensor
           //l ! ZoneLeader.PingSensor
