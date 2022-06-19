@@ -11,8 +11,8 @@ object ZoneLeader:
 
   sealed trait Command extends Message
   case object Start extends Command
-  case object PingSensor extends Command
   case object NewData extends Command
+  case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
 
   val Service = ServiceKey[Command]("Leader")
@@ -27,18 +27,18 @@ object ZoneLeader:
           case Start =>
             println("Leader partito")
             Behaviors.same
-          case PingSensor =>
-            println("ZONE LEADER => sensors: " + sensors)
-            for
-              s <- sensors
-            yield s ! Sensor.Greet
-            Behaviors.same
+
           case NewData =>
             println("LEADER => Il sensore mi ha inviato un nuovo dato ")
             Behaviors.same
+
           case TellMeYourZone(replyTo) =>
             println("MANDO RISPOSTA AL SENSORE")
             replyTo ! Sensor.ZoneOfTheLeader(zone, ctx.self)
+            Behaviors.same
+
+          case RegistrySensor(s) =>
+            sensors = sensors :+ s
             Behaviors.same
         }
     }

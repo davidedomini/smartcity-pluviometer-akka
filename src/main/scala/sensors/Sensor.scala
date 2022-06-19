@@ -8,24 +8,23 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 
 import concurrent.duration.DurationInt
 import scala.language.postfixOps
-
+import scala.util.Random
 
 object Sensor:
   sealed trait Command extends Message
   case object Start extends Command
-  case object Greet extends Command
   case object GenerateData extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
 
-  
+
   def apply(i: Int): Behavior[Command | Receptionist.Listing] =
 
     var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
-    
+
     Behaviors.setup[Command | Receptionist.Listing] { ctx =>
-      
+
       ctx.system.receptionist ! Receptionist.Subscribe(ZoneLeader.Service, ctx.self)
-      
+
       Behaviors.withTimers {
         timers =>
           // ogni secondo si manda un messaggio di generate
@@ -45,14 +44,13 @@ object Sensor:
         println("Sensore partito ")
         SensorLogic(myZone, myself, myLeader)
 
-      case Greet =>
-        println("Ciao sono il sensore ")
+      case GenerateData =>
+        val r = Random.between(0.0, 1.0)
+        println("Ho generato: "+ r)
+        if r > 0.9 && !myLeader.isEmpty then 
+          myLeader.get ! ZoneLeader.NewData
         SensorLogic(myZone, myself, myLeader)
 
-      case GenerateData =>
-        println("Sto generandooooooo")
-        SensorLogic(myZone, myself, myLeader)
-        
       case msg: Receptionist.Listing =>
         if(myLeader.isEmpty) then
           val leaders = msg.serviceInstances(ZoneLeader.Service).toList
@@ -60,9 +58,8 @@ object Sensor:
             l <- leaders
           yield l ! ZoneLeader.TellMeYourZone(myself)
         SensorLogic(myZone, myself, myLeader)
-        
+
       case ZoneOfTheLeader(z, l) =>
-        println("HO RICEVUTO RISPOSTA DA LEADER: " + l)
         if z == myZone then
           println("SENSORE " + myself + " => Il mio leader è: " + l)
           SensorLogic(myZone, myself, Option(l))
