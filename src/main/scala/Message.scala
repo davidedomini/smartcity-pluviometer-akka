@@ -1,0 +1,2 @@
+package msg
+trait Message
