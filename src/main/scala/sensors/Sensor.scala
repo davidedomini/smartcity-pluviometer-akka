@@ -15,8 +15,7 @@ object Sensor:
   case object Start extends Command
   case object GenerateData extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
-
-
+  
   def apply(i: Int): Behavior[Command | Receptionist.Listing] =
 
     var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
@@ -48,7 +47,7 @@ object Sensor:
         val r = Random.between(0.0, 1.0)
         println("Ho generato: "+ r)
         if r > 0.9 && !myLeader.isEmpty then 
-          myLeader.get ! ZoneLeader.NewData
+          myLeader.get ! ZoneLeader.PingAlarm
         SensorLogic(myZone, myself, myLeader)
 
       case msg: Receptionist.Listing =>

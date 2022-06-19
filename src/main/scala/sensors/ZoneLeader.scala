@@ -11,7 +11,7 @@ object ZoneLeader:
 
   sealed trait Command extends Message
   case object Start extends Command
-  case object NewData extends Command
+  case object PingAlarm extends Command
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
 
@@ -28,7 +28,7 @@ object ZoneLeader:
             println("Leader partito")
             Behaviors.same
 
-          case NewData =>
+          case PingAlarm =>
             println("LEADER => Il sensore mi ha inviato un nuovo dato ")
             Behaviors.same
 
