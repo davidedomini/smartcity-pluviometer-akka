@@ -5,4 +5,4 @@ object MainSensor extends App:
   startupWithRole("Sensor", 8081)(Root())
 
 object MainLeader extends App:
-  startupWithRole("Leader", 8082)(Root())
+  startupWithRole("Leader", 2551)(Root())
