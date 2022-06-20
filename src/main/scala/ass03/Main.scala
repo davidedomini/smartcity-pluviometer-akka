@@ -1,25 +1,37 @@
 package ass03
 
+import ass03.Main.{assignSensorsToZone, computeZone}
 import ass03.root.Root
 
 case class CityParams(width: Int, height: Int, rows: Int, columns: Int, numberOfSensors: Int, alarmTheshold: Int)
 case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
+
 
 object Main extends App:
 
   val world = CityParams(600, 200, 2, 3, 20, 31)
   val zones = computeZone(world)
   println(zones)
-  val sz = assignSensorsToZone(world)
+  val sz = assignSensorsToZone(world) //Coppia(sensore, zona)
   println(sz)
-  
+
+//  for
+//    z <- zones
+//  yield launchLeader1(z)
+//
+//  for
+//    s <- sz
+//    sensor = s._1
+//    zone = s._2
+//  yield deploySensor(zone)
+
   def deploySensor(zone: Int): Unit =
     val port = 8080 + zone
     startupWithRole("Sensor", port)(Root(zone))
 
-  def deployLeader(zone: Int): Unit =
-    val port = 2550 + zone
-    startupWithRole("Leader", port)(Root(zone))
+  def deployLeader(zone: Zone): Unit =
+    val port = 2550 + zone.index
+    startupWithRole("Leader", port)(Root(zone.index))
 
   def computeZone(w: CityParams): Seq[Zone] =
     val offsetY = w.height / w.rows
@@ -49,6 +61,24 @@ object Main extends App:
         j = 0
         z = z +1
     sz
+
+  @main def launchLeader1(): Unit =
+    deployLeader(zones.toList.apply(0))
+
+  @main def launchLeader2(): Unit =
+    deployLeader(zones.toList.apply(1))
+
+  @main def launchLeader3(): Unit =
+    deployLeader(zones.toList.apply(2))
+
+  @main def launchLeader4(): Unit =
+    deployLeader(zones.toList.apply(3))
+
+  @main def launchLeader5(): Unit =
+    deployLeader(zones.toList.apply(4))
+
+  @main def launchLeader6(): Unit =
+    deployLeader(zones.toList.apply(5))
 
 // Potenzialmente da cancellare
 object MainSensor extends App:

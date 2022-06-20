@@ -16,7 +16,7 @@ object Sensor:
   case object GenerateData extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
   
-  def apply(i: Int): Behavior[Command | Receptionist.Listing] =
+  def apply(myZone: Int): Behavior[Command | Receptionist.Listing] =
 
     var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
 
@@ -28,7 +28,7 @@ object Sensor:
         timers =>
           // ogni secondo si manda un messaggio di generate
           timers.startTimerAtFixedRate(GenerateData, 1000 milliseconds)
-          SensorLogic(i, ctx.self, Option.empty)
+          SensorLogic(myZone, ctx.self, Option.empty)
       }
 
     }
