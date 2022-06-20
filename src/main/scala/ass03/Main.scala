@@ -1,7 +1,7 @@
 package ass03
 
 import ass03.Main.{assignSensorsToZone, computeZone}
-import ass03.root.Root
+import ass03.root.{RootLeader, RootSensor}
 
 case class CityParams(width: Int, height: Int, rows: Int, columns: Int, numberOfSensors: Int, alarmTheshold: Int)
 case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
@@ -25,13 +25,13 @@ object Main extends App:
 //    zone = s._2
 //  yield deploySensor(zone)
 
-  def deploySensor(zone: Int): Unit =
-    val port = 8080 + zone
-    startupWithRole("Sensor", port)(Root(zone))
+  def deploySensor(z: (Int, Int)): Unit =
+    val port = 8080 + z._1
+    startupWithRole("Sensor", port)(RootSensor(z._2))
 
   def deployLeader(zone: Zone): Unit =
     val port = 2550 + zone.index
-    startupWithRole("Leader", port)(Root(zone.index))
+    startupWithRole("Leader", port)(RootLeader(zone.index))
 
   def computeZone(w: CityParams): Seq[Zone] =
     val offsetY = w.height / w.rows
@@ -62,6 +62,8 @@ object Main extends App:
         z = z +1
     sz
 
+
+  //LEADER
   @main def launchLeader1(): Unit =
     deployLeader(zones.toList.apply(0))
 
@@ -80,14 +82,77 @@ object Main extends App:
   @main def launchLeader6(): Unit =
     deployLeader(zones.toList.apply(5))
 
+
+  //SENSORI
+  @main def launchSensor1(): Unit =
+    deploySensor(sz.toList.apply(0))
+
+  @main def launchSensor2(): Unit =
+    deploySensor(sz.toList.apply(1))
+
+  @main def launchSensor3(): Unit =
+    deploySensor(sz.toList.apply(2))
+
+  @main def launchSensor4(): Unit =
+    deploySensor(sz.toList.apply(3))
+
+  @main def launchSensor5(): Unit =
+    deploySensor(sz.toList.apply(4))
+
+  @main def launchSensor6(): Unit =
+    deploySensor(sz.toList.apply(5))
+
+  @main def launchSensor7(): Unit =
+    deploySensor(sz.toList.apply(6))
+
+  @main def launchSensor8(): Unit =
+    deploySensor(sz.toList.apply(7))
+
+  @main def launchSensor9(): Unit =
+    deploySensor(sz.toList.apply(8))
+
+  @main def launchSensor10(): Unit =
+    deploySensor(sz.toList.apply(9))
+
+  @main def launchSensor11(): Unit =
+    deploySensor(sz.toList.apply(10))
+
+  @main def launchSensor12(): Unit =
+    deploySensor(sz.toList.apply(11))
+
+  @main def launchSensor13(): Unit =
+    deploySensor(sz.toList.apply(12))
+
+  @main def launchSensor14(): Unit =
+    deploySensor(sz.toList.apply(13))
+
+  @main def launchSensor15(): Unit =
+    deploySensor(sz.toList.apply(14))
+
+  @main def launchSensor16(): Unit =
+    deploySensor(sz.toList.apply(15))
+
+  @main def launchSensor17(): Unit =
+    deploySensor(sz.toList.apply(16))
+
+  @main def launchSensor18(): Unit =
+    deploySensor(sz.toList.apply(17))
+
+  @main def launchSensor19(): Unit =
+    deploySensor(sz.toList.apply(18))
+
+  @main def launchSensor20(): Unit =
+    deploySensor(sz.toList.apply(19))
+
+
 // Potenzialmente da cancellare
 object MainSensor extends App:
   println("ciao")
-  startupWithRole("Sensor", 8081)(Root(1))
+  startupWithRole("Sensor", 8081)(RootSensor(1))
 
 object MainLeader1 extends App:
-  startupWithRole("Leader", 2551)(Root(1))
-  startupWithRole("Leader", 8082)(Root(2))
+  startupWithRole("Leader", 2551)(RootLeader(1))
+  startupWithRole("Leader", 8082)(RootLeader(2))
 
 object MainLeader2 extends App:
-  startupWithRole("Leader", 2551)(Root(1))
+  startupWithRole("Leader", 2551)(RootLeader(1))

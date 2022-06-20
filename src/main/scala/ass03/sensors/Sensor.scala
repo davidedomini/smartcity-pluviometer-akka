@@ -26,7 +26,7 @@ object Sensor:
 
       Behaviors.withTimers {
         timers =>
-          // ogni secondo si manda un messaggio di generate
+          // Sends a generate message every second
           timers.startTimerAtFixedRate(GenerateData, 1000 milliseconds)
           SensorLogic(myZone, ctx.self, Option.empty)
       }
