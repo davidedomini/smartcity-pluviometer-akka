@@ -15,10 +15,17 @@ object ZoneLeader:
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
 
+  enum AlarmStatus:
+    case NoAlarm
+    case Alarm
+    case UnderManagement
+
   val Service = ServiceKey[Command]("Leader")
 
   def apply(zone: Int): Behavior[Command] =
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
+    var status = AlarmStatus.NoAlarm
+
     Behaviors.setup[Command]{
       ctx =>
         ctx.system.receptionist ! Receptionist.Register(Service, ctx.self)
