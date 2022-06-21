@@ -1,13 +1,16 @@
 package ass03.firestation
 
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import ass03.Main.computeZone
 import ass03.sensors.ZoneLeader
+import akka.actor.typed.scaladsl.*
 
 import javax.swing.{JButton, JFrame, JPanel, SwingUtilities}
 import java.awt.{BorderLayout, Canvas, Color, Dimension, Graphics}
 import ass03.{CityParams, Zone}
+import java.awt.event.{ActionEvent, ActionListener}
 
-class Gui(val width: Int, val height: Int, zone: Int):
+class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.Command]):
   self =>
   private val frame = JFrame()
   private val canvas = Environment()
@@ -17,6 +20,17 @@ class Gui(val width: Int, val height: Int, zone: Int):
 
   val optPanel = JPanel()
   val manageBtn = JButton("Manage alarm")
+
+  manageBtn.addActionListener( new ActionListener {
+    override def actionPerformed(e: ActionEvent): Unit =
+      act ! FireStation.ManageAlarm
+  })
+
+  resolveBtn.addActionListener( new ActionListener {
+    override def actionPerformed(e: ActionEvent): Unit =
+      act ! FireStation.ResolveAlarm
+  })
+
   val resolveBtn = JButton("Resolve alarm")
   optPanel.add(manageBtn)
   optPanel.add(resolveBtn)
@@ -58,7 +72,7 @@ class Gui(val width: Int, val height: Int, zone: Int):
 
 
 object TryGui extends App:
-  val g = Gui(600, 300, 1)
+  val g = Gui(600, 300, 1, null)
   val world = CityParams(600, 200, 2, 3, 20, 31)
   val zones = computeZone(world)
   g.render(zones.map(z => if z.index % 2 == 0 then (z, "NoAlarm") else (z, "Alarm")).toList)

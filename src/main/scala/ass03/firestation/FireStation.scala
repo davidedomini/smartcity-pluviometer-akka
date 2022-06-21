@@ -15,6 +15,8 @@ import scala.language.postfixOps
 object FireStation:
   sealed trait Command extends Message
   case object RequireStatus extends Command
+  case object ManageAlarm extends Command
+  case object ResolveAlarm extends Command
   case class Alarm(zone: Int) extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
   case class ZoneStatus(zone: Int, status: String) extends Command
@@ -22,10 +24,11 @@ object FireStation:
   def apply(zones: List[Zone], myZone: Int, w: CityParams): Behavior[Command | Receptionist.Listing] =
 
     var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
-    val view = Gui(w.width, w.height, myZone)
+
 
     Behaviors.setup[Command | Receptionist.Listing] { ctx =>
       println("FIRE STATION: " + zones)
+      val view = Gui(w.width, w.height, myZone, ctx.self)
       ctx.system.receptionist ! Receptionist.Subscribe(ZoneLeader.Service, ctx.self)
       val situation = zones.map(z => (z, "NoAlarm"))
       view.render(situation)
@@ -45,7 +48,7 @@ object FireStation:
           situation: List[(Zone, String)]
   ): Behavior[Command | Receptionist.Listing] =
     Behaviors.receiveMessage {
-          
+
       case msg: Receptionist.Listing =>
         val leaders = msg.serviceInstances(ZoneLeader.Service).toList
         if(leaderOfMyZone.isEmpty) then
@@ -79,4 +82,8 @@ object FireStation:
         val newSituation = situation.map( e => if e._1.index == z then (e._1, s) else e )
         view.render(newSituation)
         FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, view, newSituation)
+
+      case ManageAlarm => ???
+
+      case ResolveAlarm => ???
     }
