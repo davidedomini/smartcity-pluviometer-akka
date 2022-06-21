@@ -14,6 +14,7 @@ object ZoneLeader:
   case object Start extends Command
   case object PingAlarm extends Command
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
+  case class RegistryFirestation(s: ActorRef[FireStation.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
   case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
 
@@ -27,6 +28,7 @@ object ZoneLeader:
   def apply(zone: Int): Behavior[Command] =
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
     var status = AlarmStatus.NoAlarm
+    var fireStation: Option[ActorRef[FireStation.Command]] = Option.empty
 
     Behaviors.setup[Command]{
       ctx =>
@@ -39,6 +41,8 @@ object ZoneLeader:
 
           case PingAlarm =>
             println("LEADER => Il sensore mi ha inviato un nuovo dato ")
+            if !fireStation.isEmpty then
+              fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same
 
           case TellMeYourZone(replyTo) =>
@@ -53,6 +57,10 @@ object ZoneLeader:
 
           case RegistrySensor(s) =>
             sensors = sensors :+ s
+            Behaviors.same
+
+          case RegistryFirestation(fs) =>
+            fireStation = Option(fs)
             Behaviors.same
         }
     }

@@ -13,8 +13,7 @@ object FireStation:
   sealed trait Command extends Message
   case class Alarm(zone: Int) extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
-
-
+  
   def apply(zones: List[Zone], myZone: Int, w: CityParams): Behavior[Command | Receptionist.Listing] =
 
     var leader: Option[ActorRef[ZoneLeader.Command]] = Option.empty
@@ -47,6 +46,7 @@ object FireStation:
       case ZoneOfTheLeader(z, l) =>
         if z == myZone && leader.isEmpty then
           println("FIRE STATION " + mySelf + "il leader della mia zona è " + l)
+          l ! ZoneLeader.RegistryFirestation(mySelf)
           FireStationLogic(myZone, mySelf, Option(l), view, situation)
         else
           FireStationLogic(myZone, mySelf, leader, view, situation)

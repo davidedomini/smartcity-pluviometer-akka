@@ -61,6 +61,7 @@ object Sensor:
       case ZoneOfTheLeader(z, l) =>
         if z == myZone then
           println("SENSORE " + myself + " => Il mio leader è: " + l)
+          l ! ZoneLeader.RegistrySensor(myself)
           SensorLogic(myZone, myself, Option(l))
         else
           SensorLogic(myZone, myself, myLeader)
