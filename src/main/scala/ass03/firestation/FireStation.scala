@@ -78,12 +78,16 @@ object FireStation:
         FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, view, situation)
 
       case ZoneStatus(z, s) =>
-        //Cambiare la situazione della zona z in s
+        //Cambia la situazione della zona z in s
         val newSituation = situation.map( e => if e._1.index == z then (e._1, s) else e )
         view.render(newSituation)
         FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, view, newSituation)
 
-      case ManageAlarm => ???
+      case ManageAlarm =>
+        leaderOfMyZone.get ! ZoneLeader.AlarmUnderManagement(mySelf)
+        FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, view, situation)
 
-      case ResolveAlarm => ???
+      case ResolveAlarm =>
+        leaderOfMyZone.get ! ZoneLeader.AlarmResolved(mySelf)
+        FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, view, situation)
     }

@@ -17,21 +17,17 @@ class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.
   canvas.setSize(width, height)
   frame.setSize(width+200, height+100)
   frame.setTitle("Firestation of zone: " + zone)
-
   val optPanel = JPanel()
   val manageBtn = JButton("Manage alarm")
-
   manageBtn.addActionListener( new ActionListener {
     override def actionPerformed(e: ActionEvent): Unit =
       act ! FireStation.ManageAlarm
   })
-
+  val resolveBtn = JButton("Resolve alarm")
   resolveBtn.addActionListener( new ActionListener {
     override def actionPerformed(e: ActionEvent): Unit =
       act ! FireStation.ResolveAlarm
   })
-
-  val resolveBtn = JButton("Resolve alarm")
   optPanel.add(manageBtn)
   optPanel.add(resolveBtn)
   val layout = BorderLayout()
