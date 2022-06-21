@@ -1,4 +1,4 @@
-package view
+package firestation
 
 import ass03.Main.computeZone
 

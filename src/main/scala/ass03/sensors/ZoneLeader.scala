@@ -1,6 +1,7 @@
 package ass03.sensors
 
 import ass03.msg.Message
+import ass03.firestation.FireStation
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
@@ -14,6 +15,7 @@ object ZoneLeader:
   case object PingAlarm extends Command
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
+  case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
 
   enum AlarmStatus:
     case NoAlarm
@@ -42,6 +44,11 @@ object ZoneLeader:
           case TellMeYourZone(replyTo) =>
             println("MANDO RISPOSTA AL SENSORE")
             replyTo ! Sensor.ZoneOfTheLeader(zone, ctx.self)
+            Behaviors.same
+
+          case TellMeYourZoneFirestation(replyTo) =>
+            println("MANDO RISPOSTA ALLA CASERMA")
+            replyTo ! FireStation.ZoneOfTheLeader(zone, ctx.self)
             Behaviors.same
 
           case RegistrySensor(s) =>

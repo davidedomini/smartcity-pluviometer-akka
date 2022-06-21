@@ -1,7 +1,7 @@
 package ass03
 
 import ass03.Main.{assignSensorsToZone, computeZone}
-import ass03.root.{RootLeader, RootSensor}
+import ass03.root.{RootLeader, RootSensor, RootFirestation}
 
 case class CityParams(width: Int, height: Int, rows: Int, columns: Int, numberOfSensors: Int, alarmTheshold: Int)
 case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
@@ -24,6 +24,10 @@ object Main extends App:
 //    sensor = s._1
 //    zone = s._2
 //  yield deploySensor(zone)
+
+  def deployFireStation(z: Int): Unit =
+    val port = 8280 + z
+    startupWithRole("FireStation", port)(RootFirestation(z))
 
   def deploySensor(z: (Int, Int)): Unit =
     val port = 8080 + z._1
@@ -82,6 +86,11 @@ object Main extends App:
   @main def launchLeader6(): Unit =
     deployLeader(zones.toList.apply(5))
 
+
+  //FIRESTATION
+
+  @main def launchFirestation1(): Unit =
+    deployFireStation(1)
 
   //SENSORI
   @main def launchSensor1(): Unit =
