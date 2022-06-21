@@ -2,7 +2,6 @@ package ass03
 
 import akka.actor.typed.{ActorSystem, Behavior}
 import com.typesafe.config.ConfigFactory
-import ass03.root.Root
 
 val seeds = List(2551, 2552) // seed used in the configuration
 

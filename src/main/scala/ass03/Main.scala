@@ -95,6 +95,9 @@ object Main extends App:
   @main def launchFirestation2(): Unit =
     deployFireStation(2)
 
+  @main def launchFirestation3(): Unit =
+    deployFireStation(3)
+
   //SENSORI
   @main def launchSensor1(): Unit =
     deploySensor(sz.toList.apply(0))

@@ -16,18 +16,24 @@ object ZoneLeader:
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class RegistryFirestation(s: ActorRef[FireStation.Command]) extends Command
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
+  case class GetStatus(replyTo: ActorRef[FireStation.Command]) extends Command
   case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
-
-  enum AlarmStatus:
-    case NoAlarm
-    case Alarm
-    case UnderManagement
+  
+  sealed class AlarmStatus
+  case object NoAlarm extends AlarmStatus
+  case object Alarm extends AlarmStatus
+  case object UnderManagement extends AlarmStatus
+  
+  //enum AlarmStatus:
+    //case NoAlarm
+    //case Alarm
+    //case UnderManagement
 
   val Service = ServiceKey[Command]("Leader")
 
   def apply(zone: Int): Behavior[Command] =
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
-    var status = AlarmStatus.NoAlarm
+    var status: String = "NoAlarm"
     var fireStation: Option[ActorRef[FireStation.Command]] = Option.empty
 
     Behaviors.setup[Command]{
@@ -42,6 +48,7 @@ object ZoneLeader:
           case PingAlarm =>
             println("LEADER => Il sensore mi ha inviato un nuovo dato ")
             if !fireStation.isEmpty then
+              status = "Alarm"
               fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same
 
@@ -61,6 +68,10 @@ object ZoneLeader:
 
           case RegistryFirestation(fs) =>
             fireStation = Option(fs)
+            Behaviors.same
+
+          case GetStatus(replyTo) =>
+            replyTo ! FireStation.ZoneStatus(zone, status)
             Behaviors.same
         }
     }
