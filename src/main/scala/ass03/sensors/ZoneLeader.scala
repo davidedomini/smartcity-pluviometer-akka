@@ -18,16 +18,6 @@ object ZoneLeader:
   case class TellMeYourZone(replyTo: ActorRef[Sensor.Command]) extends Command
   case class GetStatus(replyTo: ActorRef[FireStation.Command]) extends Command
   case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
-  
-  sealed class AlarmStatus
-  case object NoAlarm extends AlarmStatus
-  case object Alarm extends AlarmStatus
-  case object UnderManagement extends AlarmStatus
-  
-  //enum AlarmStatus:
-    //case NoAlarm
-    //case Alarm
-    //case UnderManagement
 
   val Service = ServiceKey[Command]("Leader")
 
@@ -46,8 +36,8 @@ object ZoneLeader:
             Behaviors.same
 
           case PingAlarm =>
-            println("LEADER => Il sensore mi ha inviato un nuovo dato ")
-            if !fireStation.isEmpty then
+            println("LEADER => Il sensore mi ha inviato un nuovo dato di allarme")
+            if !fireStation.isEmpty && !status.matches("Alarm") then
               status = "Alarm"
               fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same

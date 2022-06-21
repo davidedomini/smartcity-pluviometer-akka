@@ -3,22 +3,28 @@ package ass03.firestation
 import ass03.Main.computeZone
 import ass03.sensors.ZoneLeader
 
-import javax.swing.{JFrame, JPanel, SwingUtilities}
-import java.awt.{Canvas, Color, Dimension, Graphics}
+import javax.swing.{JButton, JFrame, JPanel, SwingUtilities}
+import java.awt.{BorderLayout, Canvas, Color, Dimension, Graphics}
 import ass03.{CityParams, Zone}
-import ass03.sensors.ZoneLeader.{Alarm, AlarmStatus, NoAlarm, UnderManagement}
-
-import java.awt.{Dimension, Graphics}
 
 class Gui(val width: Int, val height: Int, zone: Int):
   self =>
   private val frame = JFrame()
   private val canvas = Environment()
   canvas.setSize(width, height)
-  frame.setSize(width, height)
+  frame.setSize(width+200, height+100)
   frame.setTitle("Firestation of zone: " + zone)
+
+  val optPanel = JPanel()
+  val manageBtn = JButton("Manage alarm")
+  val resolveBtn = JButton("Resolve alarm")
+  optPanel.add(manageBtn)
+  optPanel.add(resolveBtn)
+  val layout = BorderLayout()
+  frame.setLayout(layout)
   frame.setLocationRelativeTo(null)
-  frame.add(canvas)
+  frame.add(canvas, BorderLayout.NORTH)
+  frame.add(optPanel, BorderLayout.SOUTH)
   frame.setVisible(true)
   canvas.setVisible(true)
 
@@ -46,7 +52,6 @@ class Gui(val width: Int, val height: Int, zone: Int):
           case "UnderManagement" => g.setColor(Color.YELLOW)
           case "Alarm" => g.setColor(Color.RED)
         }
-        //if !alarm then g.setColor(Color.YELLOW) else g.setColor(Color.RED)
         g.fillRect(z.x, z.y, z.offsetX, z.offsetY)
         g.setColor(Color.BLACK)
         g.drawString("Zone: " + z.index, xs, ys)

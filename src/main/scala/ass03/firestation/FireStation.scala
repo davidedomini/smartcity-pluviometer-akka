@@ -7,7 +7,6 @@ import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import ass03.sensors.ZoneLeader.{AlarmStatus, Alarm, NoAlarm, UnderManagement}
 import ass03.sensors.{Sensor, ZoneLeader}
 
 import concurrent.duration.DurationInt
