@@ -1,4 +1,4 @@
-package firestation
+package ass03.firestation
 
 import ass03.Main.computeZone
 
@@ -8,12 +8,13 @@ import ass03.{CityParams, Zone}
 
 import java.awt.{Dimension, Graphics}
 
-class Gui(val width: Int, val height: Int):
+class Gui(val width: Int, val height: Int, zone: Int):
   self =>
   private val frame = JFrame()
   private val canvas = Environment()
   canvas.setSize(width, height)
   frame.setSize(width, height)
+  frame.setTitle("Firestation of zone: " + zone)
   frame.setLocationRelativeTo(null)
   frame.add(canvas)
   frame.setVisible(true)
@@ -38,14 +39,14 @@ class Gui(val width: Int, val height: Int):
         xs = z.x + (z.offsetX/3).toInt
         ys = z.y + (z.offsetY/2).toInt
       do
-        if alarm then g.setColor(Color.YELLOW) else g.setColor(Color.RED)
+        if !alarm then g.setColor(Color.YELLOW) else g.setColor(Color.RED)
         g.fillRect(z.x, z.y, z.offsetX, z.offsetY)
         g.setColor(Color.BLACK)
         g.drawString("Zone: " + z.index, xs, ys)
 
 
 object TryGui extends App:
-  val g = Gui(600, 300)
+  val g = Gui(600, 300, 1)
   val world = CityParams(600, 200, 2, 3, 20, 31)
   val zones = computeZone(world)
   g.render(zones.map(z => if z.index % 2 == 0 then (z, true) else (z,false)).toList)

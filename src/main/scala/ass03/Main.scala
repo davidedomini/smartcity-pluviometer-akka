@@ -27,7 +27,7 @@ object Main extends App:
 
   def deployFireStation(z: Int): Unit =
     val port = 8280 + z
-    startupWithRole("FireStation", port)(RootFirestation(z))
+    startupWithRole("FireStation", port)(RootFirestation(zones.toList, z, world))
 
   def deploySensor(z: (Int, Int)): Unit =
     val port = 8080 + z._1
@@ -91,6 +91,9 @@ object Main extends App:
 
   @main def launchFirestation1(): Unit =
     deployFireStation(1)
+
+  @main def launchFirestation2(): Unit =
+    deployFireStation(2)
 
   //SENSORI
   @main def launchSensor1(): Unit =
