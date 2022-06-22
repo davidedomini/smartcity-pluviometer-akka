@@ -43,7 +43,7 @@ object Sensor:
       case GenerateData =>
         val r = Random.between(0.0, 1.0)
         println("Ho generato: " + r)
-        if r > 0.9 && !myLeader.isEmpty then 
+        if r > 0.7 && !myLeader.isEmpty then 
           myLeader.get ! ZoneLeader.PingAlarm
         SensorLogic(myZone, myself, myLeader, r)
 
@@ -64,7 +64,7 @@ object Sensor:
           SensorLogic(myZone, myself, myLeader, lastValue)
 
       case WasLastDataAlarming(replyTo) => 
-        val wasAlarming = if lastValue > 0.9 then true else false
+        val wasAlarming = if lastValue > 0.7 then true else false
         replyTo ! ZoneLeader.LastData(wasAlarming)
         SensorLogic(myZone, myself, myLeader, lastValue)
     }

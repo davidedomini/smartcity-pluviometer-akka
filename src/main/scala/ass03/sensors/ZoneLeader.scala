@@ -21,7 +21,6 @@ object ZoneLeader:
   case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
   case class AlarmUnderManagement(s: ActorRef[FireStation.Command]) extends Command
   case class AlarmResolved(s: ActorRef[FireStation.Command]) extends Command
-  case class WhoIsYourFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
   case class LastData(wasAlarming: Boolean) extends Command
 
   val Service = ServiceKey[Command]("Leader")
@@ -82,7 +81,7 @@ object ZoneLeader:
             Behaviors.same
 
           case GetStatus(replyTo) =>
-            replyTo ! FireStation.ZoneStatus(zone, status, sensors.length)
+            replyTo ! FireStation.ZoneStatus(zone, status, sensors.length, fireStation)
             Behaviors.same
 
           case AlarmUnderManagement(s) =>
@@ -93,11 +92,6 @@ object ZoneLeader:
           case AlarmResolved(s) =>
             if s == fireStation.get then
               status = "NoAlarm"
-            Behaviors.same
-            
-          case WhoIsYourFirestation(replyTo) => 
-            if !fireStation.isEmpty then
-              replyTo ! FireStation.ZoneFirestation(fireStation.get)
             Behaviors.same
 
           case LastData(w) =>

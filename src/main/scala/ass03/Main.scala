@@ -10,20 +10,23 @@ case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
 object Main extends App:
 
   val world = CityParams(600, 200, 2, 3, 20, 31)
+  //val world = CityParams(400, 200, 2, 2, 12, 21)
   val zones = computeZone(world)
   println(zones)
   val sz = assignSensorsToZone(world) //Coppia(sensore, zona)
   println(sz)
 
-//  for
-//    z <- zones
-//  yield launchLeader1(z)
-//
-//  for
-//    s <- sz
-//    sensor = s._1
-//    zone = s._2
-//  yield deploySensor(zone)
+  for
+    z <- zones
+  yield deployLeader(z)
+
+  for
+    z <- zones
+  yield deployFireStation(z.index)
+
+  for
+    s <- sz
+  yield deploySensor(s)
 
   def deployFireStation(z: Int): Unit =
     val port = 8280 + z
