@@ -45,7 +45,7 @@ object Sensor:
 
       case GenerateData =>
         val r = Random.between(0.0, 1.0)
-        println("Ho generato: "+ r)
+        println("Ho generato: " + r)
         if r > 0.9 && !myLeader.isEmpty then 
           myLeader.get ! ZoneLeader.PingAlarm
         SensorLogic(myZone, myself, myLeader)

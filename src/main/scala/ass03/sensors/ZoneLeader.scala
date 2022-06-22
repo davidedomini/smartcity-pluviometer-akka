@@ -7,6 +7,8 @@ import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.receptionist.ServiceKey
+import akka.cluster.typed.{Cluster, Subscribe}
+import akka.cluster.ClusterEvent.{MemberEvent, MemberExited}
 
 object ZoneLeader:
 
@@ -20,19 +22,31 @@ object ZoneLeader:
   case class TellMeYourZoneFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
   case class AlarmUnderManagement(s: ActorRef[FireStation.Command]) extends Command
   case class AlarmResolved(s: ActorRef[FireStation.Command]) extends Command
+  case class WhoIsYourFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
 
   val Service = ServiceKey[Command]("Leader")
 
-  def apply(zone: Int): Behavior[Command] =
+  def apply(zone: Int): Behavior[Command | MemberEvent] =
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
     var status: String = "NoAlarm"
     var fireStation: Option[ActorRef[FireStation.Command]] = Option.empty
 
-    Behaviors.setup[Command]{
+    Behaviors.setup[Command | MemberEvent]{
       ctx =>
         ctx.system.receptionist ! Receptionist.Register(Service, ctx.self)
+        val cluster = Cluster(ctx.system)
+        cluster.subscriptions ! Subscribe(ctx.self, classOf[MemberExited])
 
         Behaviors.receiveMessage {
+          case msg: MemberEvent =>
+            val s = msg.member.address
+            val sensorAddresses = sensors.map(e => e.path.address)
+            if sensorAddresses.contains(s) then
+              println("Rimuovo sensore " + s)
+              sensors = sensors.filter( e => !e.path.address.equals(s) )
+              println(sensors)
+            Behaviors.same
+
           case Start =>
             println("Leader partito")
             Behaviors.same
@@ -74,6 +88,11 @@ object ZoneLeader:
           case AlarmResolved(s) =>
             if s == fireStation.get then
               status = "NoAlarm"
+            Behaviors.same
+            
+          case WhoIsYourFirestation(replyTo) => 
+            if !fireStation.isEmpty then
+              replyTo ! FireStation.ZoneFirestation(fireStation.get)
             Behaviors.same
         }
     }
