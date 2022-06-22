@@ -12,9 +12,9 @@ import scala.util.Random
 
 object Sensor:
   sealed trait Command extends Message
-  case object Start extends Command
   case object GenerateData extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
+  case class WasLastDataAlarming(l: ActorRef[ZoneLeader.Command]) extends Command
   
   def apply(myZone: Int): Behavior[Command | Receptionist.Listing] =
 
@@ -26,9 +26,9 @@ object Sensor:
 
       Behaviors.withTimers {
         timers =>
-          // Sends a generate message every second
-          timers.startTimerAtFixedRate(GenerateData, 1000 milliseconds)
-          SensorLogic(myZone, ctx.self, Option.empty)
+          // Sends a generate message every ten seconds
+          timers.startTimerAtFixedRate(GenerateData, 10000 milliseconds)
+          SensorLogic(myZone, ctx.self, Option.empty, 0)
       }
 
     }
@@ -36,19 +36,16 @@ object Sensor:
   def SensorLogic(
          myZone: Int,
          myself: ActorRef[Command],
-         myLeader: Option[ActorRef[ZoneLeader.Command]]
+         myLeader: Option[ActorRef[ZoneLeader.Command]],
+         lastValue: Double
   ): Behavior[Command | Receptionist.Listing] =
     Behaviors.receiveMessage {
-      case Start =>
-        println("Sensore partito ")
-        SensorLogic(myZone, myself, myLeader)
-
       case GenerateData =>
         val r = Random.between(0.0, 1.0)
         println("Ho generato: " + r)
         if r > 0.9 && !myLeader.isEmpty then 
           myLeader.get ! ZoneLeader.PingAlarm
-        SensorLogic(myZone, myself, myLeader)
+        SensorLogic(myZone, myself, myLeader, r)
 
       case msg: Receptionist.Listing =>
         if(myLeader.isEmpty) then
@@ -56,13 +53,18 @@ object Sensor:
           for
             l <- leaders
           yield l ! ZoneLeader.TellMeYourZone(myself)
-        SensorLogic(myZone, myself, myLeader)
+        SensorLogic(myZone, myself, myLeader, lastValue)
 
       case ZoneOfTheLeader(z, l) =>
         if z == myZone then
           println("SENSORE " + myself + " => Il mio leader è: " + l)
           l ! ZoneLeader.RegistrySensor(myself)
-          SensorLogic(myZone, myself, Option(l))
+          SensorLogic(myZone, myself, Option(l), lastValue)
         else
-          SensorLogic(myZone, myself, myLeader)
+          SensorLogic(myZone, myself, myLeader, lastValue)
+
+      case WasLastDataAlarming(replyTo) => 
+        val wasAlarming = if lastValue > 0.9 then true else false
+        replyTo ! ZoneLeader.LastData(wasAlarming)
+        SensorLogic(myZone, myself, myLeader, lastValue)
     }

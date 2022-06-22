@@ -13,7 +13,6 @@ import akka.cluster.ClusterEvent.{MemberEvent, MemberExited}
 object ZoneLeader:
 
   sealed trait Command extends Message
-  case object Start extends Command
   case object PingAlarm extends Command
   case class RegistrySensor(s: ActorRef[Sensor.Command]) extends Command
   case class RegistryFirestation(s: ActorRef[FireStation.Command]) extends Command
@@ -23,6 +22,7 @@ object ZoneLeader:
   case class AlarmUnderManagement(s: ActorRef[FireStation.Command]) extends Command
   case class AlarmResolved(s: ActorRef[FireStation.Command]) extends Command
   case class WhoIsYourFirestation(replyTo: ActorRef[FireStation.Command]) extends Command
+  case class LastData(wasAlarming: Boolean) extends Command
 
   val Service = ServiceKey[Command]("Leader")
 
@@ -30,6 +30,8 @@ object ZoneLeader:
     var sensors : List[ActorRef[Sensor.Command]] = List.empty
     var status: String = "NoAlarm"
     var fireStation: Option[ActorRef[FireStation.Command]] = Option.empty
+    var majority: Int = 0
+    var alarms: Int = 0
 
     Behaviors.setup[Command | MemberEvent]{
       ctx =>
@@ -45,17 +47,18 @@ object ZoneLeader:
               println("Rimuovo sensore " + s)
               sensors = sensors.filter( e => !e.path.address.equals(s) )
               println(sensors)
+              majority = Math.ceil(sensors.length / 2).toInt
             Behaviors.same
 
-          case Start =>
-            println("Leader partito")
-            Behaviors.same
-
-          case PingAlarm =>
+          case PingAlarm => // Da cambiare
             println("LEADER => Il sensore mi ha inviato un nuovo dato di allarme")
-            if !fireStation.isEmpty && status.matches("NoAlarm") then
-              status = "Alarm"
-              fireStation.get ! FireStation.Alarm(zone)
+            alarms = 0
+            for
+              s <- sensors
+            yield s ! Sensor.WasLastDataAlarming(ctx.self)
+            //if !fireStation.isEmpty && status.matches("NoAlarm") then
+              //status = "Alarm"
+              //fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same
 
           case TellMeYourZone(replyTo) =>
@@ -70,6 +73,8 @@ object ZoneLeader:
 
           case RegistrySensor(s) =>
             sensors = sensors :+ s
+            majority = Math.ceil(sensors.length / 2).toInt + 1
+            println("BBBBBBBB majority is " + majority)
             Behaviors.same
 
           case RegistryFirestation(fs) =>
@@ -93,6 +98,16 @@ object ZoneLeader:
           case WhoIsYourFirestation(replyTo) => 
             if !fireStation.isEmpty then
               replyTo ! FireStation.ZoneFirestation(fireStation.get)
+            Behaviors.same
+
+          case LastData(w) =>
+            if w then
+              alarms = alarms + 1
+            if alarms >= majority then
+              if !fireStation.isEmpty && status.matches("NoAlarm") then
+                println("AAAAAAAAALLLLLLAAAAARMMEEEEEEEEE")
+                status = "Alarm"
+                fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same
         }
     }
