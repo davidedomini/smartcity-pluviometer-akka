@@ -8,7 +8,6 @@ import akka.cluster.ClusterEvent.{MemberEvent, MemberUp}
 import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import ass03.sensors.Sensor.Start
 import ass03.sensors.{Sensor, ZoneLeader}
 import akka.cluster.typed.{Cluster, Subscribe}
 import concurrent.duration.DurationInt
@@ -21,9 +20,9 @@ object FireStation:
   case object ResolveAlarm extends Command
   case class Alarm(zone: Int) extends Command
   case class ZoneOfTheLeader(z: Int, l: ActorRef[ZoneLeader.Command]) extends Command
-  case class ZoneStatus(zone: Int, status: String) extends Command
+  case class ZoneStatus(zone: Int, status: String, nSensors: Int) extends Command
   case class FirestationStatus(zone: Int, status: String) extends Command
-  case class StationStatus(zone: Int, status: String) extends Command
+  //case class StationStatus(zone: Int, status: String) extends Command
   case object RequireFirestationStatus extends Command 
   case class DiscoverFirestaions(nZone: Int) extends Command
   case class ZoneFirestation(f: ActorRef[Command]) extends Command
@@ -47,7 +46,7 @@ object FireStation:
       val cluster = Cluster(ctx.system)
       cluster.subscriptions ! Subscribe(ctx.self, classOf[MemberUp])
 
-      val situation = zones.map(z => (z, "NoAlarm"))
+      val situation = zones.map(z => (z, "NoAlarm", 0))
       view.render(situation)
 
       //val nz = w.columns * w.rows
@@ -68,7 +67,7 @@ object FireStation:
           leaders: List[ActorRef[ZoneLeader.Command]],
           stations: List[ActorRef[Command]],
           view: Gui,
-          situation: List[(Zone, String)],
+          situation: List[(Zone, String, Int)],
           status: String
   ): Behavior[Command | Receptionist.Listing | MemberEvent] =
     Behaviors.receiveMessage {
@@ -98,7 +97,7 @@ object FireStation:
           FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, stations, view, situation, status)
 
       case Alarm(zone) =>
-        view.render(situation.map(s => if s._1.index == zone then (s._1, "Alarm") else s))
+        view.render(situation.map(s => if s._1.index == zone then (s._1, "Alarm", s._3) else s))
         if zone == myZone then
           FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, stations, view, situation, "Busy")
         else
@@ -111,9 +110,9 @@ object FireStation:
         yield l ! ZoneLeader.GetStatus(mySelf)
         FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, stations, view, situation, status)
 
-      case ZoneStatus(z, s) =>
+      case ZoneStatus(z, s, ns) =>
         //Cambia la situazione della zona z in s
-        val newSituation = situation.map( e => if e._1.index == z then (e._1, s) else e )
+        val newSituation = situation.map( e => if e._1.index == z then (e._1, s, ns) else e )
         view.render(newSituation)
         FireStationLogic(myZone, mySelf, leaderOfMyZone, leaders, stations, view, newSituation, status)
 

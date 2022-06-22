@@ -57,14 +57,14 @@ class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.
     stationPanel.repaint()
 
 
-  def render(elements: List[(Zone, String)]): Unit = SwingUtilities.invokeLater { () =>
+  def render(elements: List[(Zone, String, Int)]): Unit = SwingUtilities.invokeLater { () =>
     canvas.elements = elements
     canvas.invalidate()
     canvas.repaint()
   }
 
   private class Environment extends JPanel:
-    var elements: List[(Zone, String)] = List.empty
+    var elements: List[(Zone, String, Int)] = List.empty
     override def getPreferredSize = new Dimension(self.width, self.height)
 
     override def paintComponent(g: Graphics): Unit =
@@ -73,7 +73,8 @@ class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.
         e <- elements
         z = e._1
         alarm = e._2
-        xs = z.x + (z.offsetX/3).toInt
+        ns = e._3
+        xs = z.x + (z.offsetX/5).toInt
         ys = z.y + (z.offsetY/2).toInt
       do
         alarm match{
@@ -83,14 +84,14 @@ class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.
         }
         g.fillRect(z.x, z.y, z.offsetX, z.offsetY)
         g.setColor(Color.BLACK)
-        g.drawString("Zone: " + z.index, xs, ys)
+        g.drawString("Zone: " + z.index + " #Sensors: " + ns , xs, ys)
 
 
 object TryGui extends App:
   val g = Gui(600, 300, 1, null)
   val world = CityParams(600, 200, 2, 3, 20, 31)
   val zones = computeZone(world)
-  g.render(zones.map(z => if z.index % 2 == 0 then (z, "NoAlarm") else (z, "Alarm")).toList)
+  g.render(zones.map(z => if z.index % 2 == 0 then (z, "NoAlarm", 0) else (z, "Alarm", 2)).toList)
   Thread.sleep(5000)
   g.updateStationsStatus((1, "Free"))
   Thread.sleep(5000)

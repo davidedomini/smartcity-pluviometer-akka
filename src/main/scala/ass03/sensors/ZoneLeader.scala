@@ -82,7 +82,7 @@ object ZoneLeader:
             Behaviors.same
 
           case GetStatus(replyTo) =>
-            replyTo ! FireStation.ZoneStatus(zone, status)
+            replyTo ! FireStation.ZoneStatus(zone, status, sensors.length)
             Behaviors.same
 
           case AlarmUnderManagement(s) =>
