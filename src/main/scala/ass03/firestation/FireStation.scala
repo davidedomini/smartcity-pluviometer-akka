@@ -72,7 +72,6 @@ object FireStation:
 
       case ZoneOfTheLeader(z, l) =>
         if z == myZone && leaderOfMyZone.isEmpty then
-          println("FIRE STATION " + mySelf + "il leader della mia zona è " + l)
           l ! ZoneLeader.RegistryFirestation(mySelf)
           FireStationLogic(myZone, mySelf, Option(l), leaders, stations, view, situation, status)
         else

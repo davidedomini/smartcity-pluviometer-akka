@@ -10,7 +10,6 @@ case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
 object Main extends App:
 
   val world = CityParams(600, 200, 2, 3, 20, 31)
-  //val world = CityParams(400, 200, 2, 2, 12, 21)
   val zones = computeZone(world)
   println(zones)
   val sz = assignSensorsToZone(world) //Coppia(sensore, zona)
@@ -161,16 +160,3 @@ object Main extends App:
 
   @main def launchSensor20(): Unit =
     deploySensor(sz.toList.apply(19))
-
-
-// Potenzialmente da cancellare
-object MainSensor extends App:
-  println("ciao")
-  startupWithRole("Sensor", 8081)(RootSensor(1))
-
-object MainLeader1 extends App:
-  startupWithRole("Leader", 2551)(RootLeader(1))
-  startupWithRole("Leader", 8082)(RootLeader(2))
-
-object MainLeader2 extends App:
-  startupWithRole("Leader", 2551)(RootLeader(1))

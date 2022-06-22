@@ -49,31 +49,25 @@ object ZoneLeader:
               majority = Math.ceil(sensors.length / 2).toInt
             Behaviors.same
 
-          case PingAlarm => // Da cambiare
+          case PingAlarm => 
             println("LEADER => Il sensore mi ha inviato un nuovo dato di allarme")
             alarms = 0
             for
               s <- sensors
             yield s ! Sensor.WasLastDataAlarming(ctx.self)
-            //if !fireStation.isEmpty && status.matches("NoAlarm") then
-              //status = "Alarm"
-              //fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same
 
           case TellMeYourZone(replyTo) =>
-            println("MANDO RISPOSTA AL SENSORE")
             replyTo ! Sensor.ZoneOfTheLeader(zone, ctx.self)
             Behaviors.same
 
           case TellMeYourZoneFirestation(replyTo) =>
-            println("MANDO RISPOSTA ALLA CASERMA")
             replyTo ! FireStation.ZoneOfTheLeader(zone, ctx.self)
             Behaviors.same
 
           case RegistrySensor(s) =>
             sensors = sensors :+ s
             majority = Math.ceil(sensors.length / 2).toInt + 1
-            println("BBBBBBBB majority is " + majority)
             Behaviors.same
 
           case RegistryFirestation(fs) =>
@@ -99,7 +93,6 @@ object ZoneLeader:
               alarms = alarms + 1
             if alarms >= majority then
               if !fireStation.isEmpty && status.matches("NoAlarm") then
-                println("AAAAAAAAALLLLLLAAAAARMMEEEEEEEEE")
                 status = "Alarm"
                 fireStation.get ! FireStation.Alarm(zone)
             Behaviors.same

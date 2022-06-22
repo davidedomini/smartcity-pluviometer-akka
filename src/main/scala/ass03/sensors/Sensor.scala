@@ -40,10 +40,10 @@ object Sensor:
          lastValue: Double
   ): Behavior[Command | Receptionist.Listing] =
     Behaviors.receiveMessage {
+          
       case GenerateData =>
         val r = Random.between(0.0, 1.0)
-        println("Ho generato: " + r)
-        if r > 0.7 && !myLeader.isEmpty then 
+        if r > 0.85 && !myLeader.isEmpty then 
           myLeader.get ! ZoneLeader.PingAlarm
         SensorLogic(myZone, myself, myLeader, r)
 
@@ -57,14 +57,13 @@ object Sensor:
 
       case ZoneOfTheLeader(z, l) =>
         if z == myZone then
-          println("SENSORE " + myself + " => Il mio leader è: " + l)
           l ! ZoneLeader.RegistrySensor(myself)
           SensorLogic(myZone, myself, Option(l), lastValue)
         else
           SensorLogic(myZone, myself, myLeader, lastValue)
 
       case WasLastDataAlarming(replyTo) => 
-        val wasAlarming = if lastValue > 0.7 then true else false
+        val wasAlarming = if lastValue > 0.85 then true else false
         replyTo ! ZoneLeader.LastData(wasAlarming)
         SensorLogic(myZone, myself, myLeader, lastValue)
     }
