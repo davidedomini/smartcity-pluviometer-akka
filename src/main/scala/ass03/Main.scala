@@ -3,13 +3,13 @@ package ass03
 import ass03.Main.{assignSensorsToZone, computeZone}
 import ass03.root.{RootLeader, RootSensor, RootFirestation}
 
-case class CityParams(width: Int, height: Int, rows: Int, columns: Int, numberOfSensors: Int, alarmTheshold: Int)
+case class CityParams(width: Int, height: Int, rows: Int, columns: Int, numberOfSensors: Int)
 case class Zone(index: Int, x: Int, offsetX: Int, y: Int, offsetY: Int)
 
 
 object Main extends App:
 
-  val world = CityParams(600, 200, 2, 3, 20, 31)
+  val world = CityParams(600, 200, 2, 3, 20)
   val zones = computeZone(world)
   println(zones)
   val sz = assignSensorsToZone(world) //Coppia(sensore, zona)
@@ -67,7 +67,6 @@ object Main extends App:
         j = 0
         z = z +1
     sz
-
 
   //LEADER
   @main def launchLeader1(): Unit =

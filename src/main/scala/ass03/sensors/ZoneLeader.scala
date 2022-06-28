@@ -88,7 +88,7 @@ object ZoneLeader:
               status = "NoAlarm"
             Behaviors.same
 
-          case LastData(w) =>
+          case LastData(w: Boolean) =>
             if w then
               alarms = alarms + 1
             if alarms >= majority then

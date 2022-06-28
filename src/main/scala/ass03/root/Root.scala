@@ -15,11 +15,7 @@ object RootLeader:
   def apply(i: Int): Behavior[Nothing] =
     Behaviors.setup {
       ctx =>
-        val cluster = Cluster(ctx.system)
-        if cluster.selfMember.hasRole("Sensor") then
-          val s = ctx.spawn(Sensor(i), "Sensor")
-        else
-          val l = ctx.spawn(ZoneLeader(i), "Leader")
+        ctx.spawn(ZoneLeader(i), "Leader")
         Behaviors.empty
     }
 
@@ -27,11 +23,7 @@ object RootSensor:
   def apply(i: Int): Behavior[Nothing] =
     Behaviors.setup {
       ctx =>
-        val cluster = Cluster(ctx.system)
-        if cluster.selfMember.hasRole("Sensor") then
-          val s = ctx.spawn(Sensor(i), "Sensor")
-        else
-          val l = ctx.spawn(ZoneLeader(i), "Leader")
+        ctx.spawn(Sensor(i), "Sensor")
         Behaviors.empty
     }
 
@@ -39,7 +31,6 @@ object RootFirestation:
   def apply(zones: List[Zone], i: Int, w: CityParams): Behavior[Nothing] =
     Behaviors.setup {
       ctx =>
-        val cluster = Cluster(ctx.system)
-        val l = ctx.spawn(FireStation(zones, i, w), "FireStation")
+        ctx.spawn(FireStation(zones, i, w), "FireStation")
         Behaviors.empty
     }

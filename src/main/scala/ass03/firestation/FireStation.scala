@@ -24,8 +24,7 @@ object FireStation:
   case class FirestationStatus(zone: Int, status: String) extends Command
   case object RequireFirestationStatus extends Command 
   case class GetStatus(replyTo: ActorRef[Command]) extends Command
-
-  val ServiceFirestation = ServiceKey[Command]("Firestation")
+  
 
   def apply(zones: List[Zone], myZone: Int, w: CityParams): Behavior[Command | Receptionist.Listing] =
 

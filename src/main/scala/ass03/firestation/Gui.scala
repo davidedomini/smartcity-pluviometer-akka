@@ -89,7 +89,7 @@ class Gui(val width: Int, val height: Int, zone: Int, act: ActorRef[FireStation.
 
 object TryGui extends App:
   val g = Gui(600, 300, 1, null)
-  val world = CityParams(600, 200, 2, 3, 20, 31)
+  val world = CityParams(600, 200, 2, 3, 20)
   val zones = computeZone(world)
   g.render(zones.map(z => if z.index % 2 == 0 then (z, "NoAlarm", 0) else (z, "Alarm", 2)).toList)
   Thread.sleep(5000)

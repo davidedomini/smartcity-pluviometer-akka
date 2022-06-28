@@ -63,7 +63,7 @@ object Sensor:
           SensorLogic(myZone, myself, myLeader, lastValue)
 
       case WasLastDataAlarming(replyTo) => 
-        val wasAlarming = if lastValue > 0.85 then true else false
+        val wasAlarming: Boolean =  lastValue > 0.85
         replyTo ! ZoneLeader.LastData(wasAlarming)
         SensorLogic(myZone, myself, myLeader, lastValue)
     }
